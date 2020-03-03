@@ -1,0 +1,219 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>check_winservice - Nagios NRPE Plugin for processor, disk and memory</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:" />
+</head>
+
+<body style="background-color: white">
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#options">OPTIONS</a></li>
+	<li><a href="#examples">EXAMPLES</a></li>
+	<li><a href="#exit_values">EXIT VALUES</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+	<li><a href="#see_also">SEE ALSO</a></li>
+	<li><a href="#copyright">COPYRIGHT</a></li>
+	<li><a href="#version">VERSION</a></li>
+	<li><a href="#changelog">CHANGELOG</a></li>
+</ul>
+
+-->
+
+
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>check_winservice - Nagios NRPE plugin for Windows service checks</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p><strong>check_winservice</strong> [ [ <strong>--service</strong> service[,service ...] ] ... ] [ [ <strong>--state</strong> state[,state ...] ] ... ] [ [ <strong>--startmode</strong> startmode[,startmode ...] ] ... ] [ <strong>--fingerprint</strong> [fingerprint] ] [<strong>--warning</strong> <em>threshold</em>] [<strong>--critical</strong> <em>threshold</em>] [<strong>--verbose</strong>] [<strong>--help</strong>]</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p><strong>check_winservice</strong> is a Nagios plugin to monitor services on the local Windows system. You can filter services based on name, state or start mode. Negation is also possible. Check_winservice has also a <em>service snapshot fingerprint</em> capability which may help you to monitor changes on service configurations.</p>
+<p>
+</p>
+<hr />
+<h1><a name="options">OPTIONS</a></h1>
+<dl>
+<dt><strong><a name="service_service_service" class="item"><strong>--service</strong> service[,service ...] ] ...</a></strong>
+
+<dd>
+<p>Specifies services you want to monitor. You can supply comma separated values as well as multiple --service options. In addition, you may exclude a service by prepending a <strong>!</strong> (like !alerter). Optional. Defaults to all services.</p>
+</dd>
+</li>
+<dt><strong><a name="state_state_state" class="item"><strong>--state</strong> state[,state ...] ] ...</a></strong>
+
+<dd>
+<p>Specifies service states you want to monitor. You can supply comma separated values as well as multiple --state options. In addition, you may negate a state by prepending a <strong>!</strong> (like !running). Available state values (case insensitive):</p>
+</dd>
+<dd>
+<pre>
+ - running
+ - stopped
+ - paused
+ - start pending
+ - stop pending
+ - continue pending
+ - pause pending
+ - unknown</pre>
+</dd>
+<dd>
+<p>Optional. Defaults to all states.</p>
+</dd>
+</li>
+<dt><strong><a name="startmode_startmode_startmode" class="item"><strong>--startmode</strong> startmode[,startmode ...] ] ...</a></strong>
+
+<dd>
+<p>Specifies service start modes you want to monitor. You can supply comma separated values as well as multiple --startmode options. In addition, you may negate a start mode by prepending a <strong>!</strong> (like !auto). Available start mode values (case insensitive):</p>
+</dd>
+<dd>
+<pre>
+ - auto
+ - manual
+ - disabled
+ - boot
+ - system</pre>
+</dd>
+<dd>
+<p>Optional. Defaults to all start modes.</p>
+</dd>
+</li>
+<dt><strong><a name="fingerprint_fingerprint" class="item"><strong>--fingerprint</strong> [fingerprint]</a></strong>
+
+<dd>
+<p>Generates a <em>service snapshot fingerprint</em> for the selected set of services. A <em>service snapshot fingerprint</em> is simply an MD5 digest of a string consisting of concatenated values of following properties for each selected service:</p>
+</dd>
+<dd>
+<pre>
+ - Name, DisplayName, PathName, ServiceType, Started, StartMode, StartName, State, Status, Description</pre>
+</dd>
+<dd>
+<p>prints the fingerprint if no parameter is specified. Otherwise it checks if the given fingerprint matches the current fingerprint for the selected services. Returns CRITICAL if it is a mismatch, OK otherwise. That way, you can get an indication about a possible unauthorized service configuration change.</p>
+</dd>
+</li>
+<dt><strong><a name="warning_threshold" class="item"><strong>--warning</strong> <em>threshold</em></a></strong>
+
+<dd>
+<p>Returns WARNING exit code if the selected number of services is above the <em>threshold</em>. Optional.</p>
+</dd>
+</li>
+<dt><strong><a name="critical_threshold" class="item"><strong>--critical</strong> <em>threshold</em></a></strong>
+
+<dd>
+<p>Returns CRITICAL exit code if the selected number of services is above the <em>threshold</em>. Optional.</p>
+</dd>
+</li>
+<dt><strong><a name="verbose" class="item"><strong>--verbose</strong></a></strong>
+
+<dd>
+<p>Produces some output for debugging or to see individual values of samples. Multiple values are allowed.</p>
+</dd>
+</li>
+<dt><strong><a name="help" class="item"><strong>--help</strong></a></strong>
+
+<dd>
+<p>Produces a help message.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="examples">EXAMPLES</a></h1>
+<pre>
+ check_winservice --startmode auto --state !running --critical 0</pre>
+<p>Returns CRITICAL if there exists automatic services which are not running.</p>
+<pre>
+ check_winservice --service TroubleMaker1,TroubleMaker2 --state running --critical 0</pre>
+<p>Returns CRITICAL if services <em>TroubleMaker1</em> or <em>TroubleMaker2</em> are running.</p>
+<pre>
+ check_winservice --critical 1 -startmode boot,system -service !BootA,!BootB,!SystemC</pre>
+<p>Returns CRITICAL if there is at least one service except service BootA, BootB and SystemC, which is configured to start during boot or system phase.</p>
+<pre>
+ check_winservice --warning 200 --critical 300</pre>
+<p>Returns WARNING or CRITICAL if the number of defined services exceeds 200 or 300 respectively.</p>
+<pre>
+ check_winservice --startmode !manual --service Manual1,Manual2 --service Manual3 --critical 0</pre>
+<p>Returns CRITICAL if services <em>Manual1</em>, <em>Manual2</em> or <em>Manual3</em> are not configured to run manually.</p>
+<pre>
+ check_winservice --fingerprint --state running</pre>
+<p>Print the <em>service snapshot fingerprint</em> for running services.</p>
+<pre>
+ check_winservice --fingerprint xxxxxxxxxxxxxxxxxxxxxxx --state running</pre>
+<p>Returns CRITICAL if the specified fingerprint xxxxxxx does not match the <em>service snapshot fingerprint</em> of running services</p>
+<p>
+</p>
+<hr />
+<h1><a name="exit_values">EXIT VALUES</a></h1>
+<pre>
+ 0 OK
+ 1 WARNING
+ 2 CRITICAL
+ 3 UNKNOWN</pre>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>Tevfik Karagulle <a href="http://www.itefix.no">http://www.itefix.no</a></p>
+<p>
+</p>
+<hr />
+<h1><a name="see_also">SEE ALSO</a></h1>
+<dl>
+<dt><strong><a name="nagios_web_site_http_www_nagios_org" class="item">Nagios web site <a href="http://www.nagios.org">http://www.nagios.org</a></a></strong>
+
+<dt><strong><a name="nagios_nrpe_documentation_http_nagios_sourceforge_net_docs_nrpe_nrpe_pdf" class="item">Nagios NRPE documentation <a href="http://nagios.sourceforge.net/docs/nrpe/NRPE.pdf">http://nagios.sourceforge.net/docs/nrpe/NRPE.pdf</a></a></strong>
+
+<dt><strong><a name="typeperf_documentation_http_www_microsoft_com_resources_documentation_windows_xp_all_proddocs_en_us_nt_command_typeperf_mspx_mfr_true" class="item">typeperf documentation <a href="http://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/nt_command_typeperf.mspx?mfr=true">http://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/nt_command_typeperf.mspx</a></a></strong>
+
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="copyright">COPYRIGHT</a></h1>
+<p>This program is distributed under the Artistic License. <a href="http://www.opensource.org/licenses/artistic-license.php">http://www.opensource.org/licenses/artistic-license.php</a></p>
+<p>
+</p>
+<hr />
+<h1><a name="version">VERSION</a></h1>
+<p>Version 1.1, October 2011</p>
+<p>
+</p>
+<hr />
+<h1><a name="changelog">CHANGELOG</a></h1>
+<dl>
+<dt><strong><a name="changes_from_1_0" class="item">Changes from 1.0</a></strong>
+
+<dd>
+<pre>
+ - Bug fix: Improper combination of multiple negated elements in the generated WQL string. See Itefix forum topic <a href="http://www.itefix.no/i2/node/12871">http://www.itefix.no/i2/node/12871</a> for more info.
+
+</pre>
+</dd>
+<dt><strong><a name="initial_release" class="item">Initial release</a></strong>
+
+</dl>
+
+</body>
+
+</html>

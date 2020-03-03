@@ -1,0 +1,32 @@
+#!/bin/bash
+############################################################################################################
+################################## Desenvolvido por Andre Luiz Facina ######################################
+############## Script para checar o numero de processos de um servidor Windows 2003 via SNMP ###############
+############################################################################################################
+
+# Variaveis
+warn=$3
+crit=$4
+
+# Comando para checar o numero de processos
+# Obtem as informacoes apartir da MIB HOST-RESOURCES-MIB::hrSystemProcesses.0
+
+nproc=`snmpget -v 1 -c $2 $1  hrSystemProcesses.0 | awk '{print $4}'`
+
+# Verifica se o numero de processos esta Ok, Warn ou Crit
+if [ $nproc -ge $warn ]; then
+	if [ $nproc -lt $crit ]; then
+	echo "Warning - NProcs => $nproc"
+	exit 1
+	fi
+fi
+
+if [ $nproc -ge $crit ]; then
+	echo "Critical - NProcs => $nproc"
+	exit 2
+fi
+
+if [ $nproc -lt $warn ]; then
+	echo "Ok - NProcs => $nproc"
+	exit 0
+fi

@@ -1,0 +1,62 @@
+Installing check_win_eventlog and eventlog_agent!
+
+0. Overview
+This section describes what you will need to successfully install the software 
+as described in the following sections. Obviously you will need a windows 
+box (windows nt 4 or higher), because we are trying to observe its eventlog.
+And of course, you will need a running Nagios Installation 
+(see http://www.nagios.org), because check_win_eventlog is a plugin for Nagios. 
+Running it without Nagios is possible, but does not make much sense, because 
+there is no notification logic included.
+
+1. Installing check_win_eventlog
+To install this Nagios plugin, simply copy check_win_eventlog.pl to the
+$NAGIOS_HOME/libexec directory. Owner and group should be set to your Nagios 
+user and group. Set the excutable flag by calling 
+chmod 644 $NAGIOS_HOME/libexec/check_win_eventlog.pl
+To make use of the plugin you need to define a check_command and a
+service like it is shown below:
+
+define command{
+       command_name           check_win_eventlog
+       command_line           $USER1$/check_win_eventlog.pl -H $HOSTADDRESS$ -s $ARG1$ -l $ARG2$ -t $ARG3$
+}
+
+define service{
+       service_description    System Eventlog
+       use                    generic-service
+       check_command          check_win_eventlog!a!System!.*:+1
+       max_check_attemtps     1
+       host_name              MyMachine
+       contact_groups         MyAdminGroup
+       is_volatile            1
+}
+
+This will check the Eventlog Protocol "System" and excludes all Events
+that are not of type error ('.*' exclude all; '+1' but include errors).
+Of course there are some other options to filter the events (see the 
+check_win_eventlog usage information).
+
+2. Install the eventlog_agent
+You have 2 options to install the eventlog_agent on your Windows box.
+a) Manual invocation
+To test this piece of Software you may choose to simply run the 'eventlog_agent.exe'
+from the Windows Explorer. There is NO configuration needed, so you can just 
+run the Nagios Plugin to query the agent.
+b) Windows Service
+Most people will want to install the 'eventlog_agent.exe' as Windows service, because
+this way it will start automatically on each reboot.
+To do this, you will need 'instsrv.exe' and 'srvany.exe' from Microsoft 
+Resource Kit (see http://support.microsoft.com:80/support/kb/articles/q137/8/90.asp ;
+download from ftp://ftp.microsoft.com/bussys/winnt/winnt-public/reskit/nt35/i386/I386.exe - 
+this is for nt3.5 but should work for more recent versions too.)
+Just copy those files together with 'eventlog_agent.exe', 'eventlog_agent.bat' and
+'eventlog_agent.reg' into the folder 'c:\programme\eventlog_agent' and run the
+batch file. If you want to use a different folder, then you will need to modify
+the path in 'eventlog_agent.bat' and 'eventlog_agent.reg'
+
+
+2b. Uninstall the eventlog_agent
+If you used installation method a) - just delete the files.
+If you used installation method b), then open a command line window, navigate 
+to the installation directory and execute "eventlog_agent.bat stop".

@@ -1,0 +1,120 @@
+#!/usr/bin/perl -s
+###############################################
+#
+#
+# Description : perl script for checking windows processes
+#		based on snmpwalk
+#
+# Author      : David Ligeret (david.ligeret at gmail.com)
+#
+###############################################
+#
+# Usage : check_win_processes <hostname> <community> proc1 [proc2] [...] [procN]
+#  <hostname>  : IP address or hostname
+#  <community> : SNMP community to use
+#  proc1       : process name to check
+#  procN       : additionnal process name to check
+#
+###############################################
+# 
+# History :
+#   - 20071113 (ligeret) : initial release
+#
+###############################################
+#
+# TODO :
+#
+###############################################
+
+# Nagios specific
+use lib "/usr/local/nagios/libexec";
+use utils qw(%ERRORS $TIMEOUT);
+my $ERRORS =
+{
+	'OK'      => 0,
+	'WARNING' => 1,
+	'CRITICAL'=> 2,
+	'UNKNOWN' => 3
+};
+
+
+# Globals
+my $version = '0.1';
+
+# print usage
+sub usage
+{
+	print qq{Usage : $0 <hostname> <community> proc1 [proc2] [...] [procN]
+<hostname>  : IP address or hostname
+<community> : SNMP community to use
+proc1       : process name to check
+procN       : additionnal process name to check
+}
+}
+
+# check user's inputs
+sub check_arguments
+{
+	if (!defined($ARGV[0]) || !defined($ARGV[1]) || !defined($ARGV[2]))
+	{
+		print ("Invalid argument(s) !\n");
+		&usage;
+		exit $ERRORS->{'UNKNOWN'};
+	}
+}
+
+&check_arguments;
+
+# retrieve user's inputs
+$hostname = $ARGV[0];
+$community = $ARGV[1];
+
+# run snmpwalk
+@proclist = `snmpwalk -v 1 -c $community $hostname hrSWRunName`;
+if ($? / 256)
+{
+	print "UNKNOWN: fail to call snmpwalk";
+	exit $ERRORS->{UNKNOWN};
+}
+
+# retrieve running processes
+my $refproc;
+foreach $item (@proclist)
+{
+	$item =~ /HOST\-RESOURCES\-MIB::hrSWRunName\.([0-9]+) = STRING: "(.+)"/;
+	$refproc->{lc($2)}++;
+}
+
+# compare processes to user's inputs
+my $procnum = 0;
+my @missingproc;
+for ($i=0; $i<scalar(@ARGV)-2; $i++)
+{
+	my $tocheck = $ARGV[$i+2];
+	if ($refproc->{lc($tocheck)}>0)
+	{
+	    $refproc->{lc($tocheck)}--;
+        $procnum++;
+	}
+	else
+	{
+		push(@missingproc, $tocheck);
+	}
+}
+
+# output results
+if (scalar(@missingproc))
+{
+	my $errormsg = "KO: missing process(es) = ";
+	foreach $item (@missingproc)
+	{
+		$errormsg .= $item.", ";
+	}
+	print $errormsg;
+	exit $ERRORS->{CRITICAL};
+}
+else
+{
+	print "OK: $procnum running process(es)";
+	exit $ERRORS->{OK};
+}
